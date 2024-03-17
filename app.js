@@ -56,16 +56,6 @@ const verifyToken = (req, res, next) => {
 };
 
 
-// Set up multer storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname)
-    }
-});
-
 // const upload = multer({ storage: storage });
 
 // user signup route
@@ -206,9 +196,12 @@ app.post('/api/blogs', verifyToken, async (req, res) => {
 
 
 // Get all blog posts
-app.get('/api/blogs', async (req, res) => {
+app.get('/api/blogs', verifyToken, async (req, res) => {
     try {
-        const blogs = await Blog.find().populate('author', 'fullName email');
+        const userId = req.userId; // Extract userId from token
+
+        const blogs = await Blog.find({ author: userId }).populate('author', 'fullName email');
+        
         res.status(200).json(blogs);
     } catch (error) {
         console.error('Error fetching blogs:', error);
